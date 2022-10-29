@@ -1,1 +1,3 @@
 # ツール
+
+githubactionで動く
