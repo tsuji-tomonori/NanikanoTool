@@ -18,6 +18,7 @@
     ]
   },
   "context": {
+    "PROJECT_NAME": "NanikanoTool",
     "lambda_env": {
       "LOG_LEVEL": "INFO",
       "PKEY": "key",

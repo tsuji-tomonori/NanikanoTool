@@ -77,8 +77,8 @@ class SugokuWaruiTool(Stack):
 
 
 app = cdk.App()
-apigw_stack = SugokuWaruiTool(app, "AsakatsuStack", stack_name="AsakatsuStack")
-Tags.of(apigw_stack).add("Project", "SugokuWaruiTool")
+apigw_stack = SugokuWaruiTool(app, app.node.try_get_context("PROJECT_NAME"))
+Tags.of(apigw_stack).add("Project", app.node.try_get_context("PROJECT_NAME"))
 Tags.of(apigw_stack).add("Type", "Pro")
 Tags.of(apigw_stack).add("Creator", "cdk")
 app.synth()
