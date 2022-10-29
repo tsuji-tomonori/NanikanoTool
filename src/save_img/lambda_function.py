@@ -125,6 +125,7 @@ def get_img(img_url: str) -> bytes:
 
 
 def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> None:
+    logger.info("get_and_save_img start")
     response = requests.get(sp.archive_url)
     soup = BeautifulSoup(response.text, 'lxml')
     index = 0
@@ -145,6 +146,7 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
 
 
 def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
+    logger.info("control start")
     response = dp.dynamodb.scan(
         ep.BUCKET_NAME, body.get("LastEvaluatedKey")
     )
@@ -156,6 +158,7 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
 
 
 def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
+    logger.info("control_loop start")
     # SQSの中身をパース
     body = json.loads(record["body"])
     # リトライオーバー
@@ -174,6 +177,7 @@ def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) ->
 def lambda_handler(event, context) -> int:
     ep = EnvironParams.from_env()
     logger.setLevel(ep.LOG_LEVEL)
+    logger.info(json.dumps(event, indent=2))
     dp = Dependencies.on_lambda()
     for ix, record in enumerate(event["Records"]):
         control_loop(record, ep, dp)
