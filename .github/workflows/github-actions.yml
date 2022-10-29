@@ -82,6 +82,7 @@ jobs:
           uuid=`uuidgen`
           echo ${uuid} > ./uuid
           stack=`cdk ls 2>&1 | tr -d "\n"`
+          echo ${CDK_OUT_UPLOAD_BUCKET}/${stack}/${uuid}/
           aws s3 cp ./cdk.out/ s3://${CDK_OUT_UPLOAD_BUCKET}/${stack}/${uuid}/ --recursive --exclude "*" --include "*.json"
           aws s3 cp ./uuid s3://${CDK_OUT_UPLOAD_BUCKET}/${stack}/
         env:
