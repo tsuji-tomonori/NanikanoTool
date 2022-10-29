@@ -151,7 +151,6 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     response = dp.dynamodb.scan(
         ep.DB_NAME, body.get("LastEvaluatedKey")
     )
-    logger.info(json.dumps(response), indent=2)
     if len(response["Items"]) == 1:
         sp = ServiceParam.of(response["Items"][0]["archive_url"]["S"])
         get_and_save_img(ep=ep, dp=dp, sp=sp)
