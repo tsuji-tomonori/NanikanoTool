@@ -74,6 +74,7 @@ class SugokuWaruiTool(Stack):
 
         fin_topic = sns.Topic(self, "fin_topic")
         fin_topic.grant_publish(saveimg_fn.role)
+        saveimg_fn.add_environment("TOPICK_ARN", fin_topic.topic_arn)
 
 
 app = cdk.App()
