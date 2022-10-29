@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+from textwrap import indent
 import time
 import logging
 from typing import Any, NamedTuple
@@ -151,6 +152,7 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     response = dp.dynamodb.scan(
         ep.BUCKET_NAME, body.get("LastEvaluatedKey")
     )
+    logger.info(json.dumps(response), indent=2)
     if len(response["Items"]) == 1:
         sp = ServiceParam.of(response["Items"][0]["archive_url"]["S"])
         get_and_save_img(ep=ep, dp=dp, sp=sp)
