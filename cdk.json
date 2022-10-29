@@ -21,7 +21,7 @@
     "PROJECT_NAME": "NanikanoTool",
     "lambda_env": {
       "LOG_LEVEL": "INFO",
-      "PKEY": "key",
+      "PKEY": "archive_url",
       "N_RETRY": "5"
     }
   }
