@@ -44,6 +44,7 @@ class S3(AwsBase):
 
 class DynamoDb(AwsBase):
     def scan(self, db_name: str, last_evaluated_key: str | None) -> dict:
+        logger.info("DynamoDb start")
         client = self.session.client("dynamodb")
         param = {"TableName": db_name}
         if last_evaluated_key:
