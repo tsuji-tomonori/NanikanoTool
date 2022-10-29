@@ -28,7 +28,7 @@ class EnvironParams(NamedTuple):
 
 
 class AwsBase:
-    def __init__(self, profile: str | None) -> None:
+    def __init__(self, profile: str | None = None) -> None:
         self.session = boto3.Session(profile_name=profile)
 
 
