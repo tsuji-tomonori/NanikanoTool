@@ -176,7 +176,7 @@ def lambda_handler(event, context) -> int:
     logger.setLevel(ep.LOG_LEVEL)
     dp = Dependencies.on_lambda()
     for ix, record in enumerate(event["Records"]):
-        control_loop(record, ix, ep, dp)
+        control_loop(record, ep, dp)
         # 次のレコードがあれば5秒待つ
         if ix != len(record["Records"]):
             logger.info("[wait][5s]")
