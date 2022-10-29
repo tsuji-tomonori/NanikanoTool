@@ -21,7 +21,7 @@
     "lambda_env": {
       "LOG_LEVEL": "INFO",
       "PKEY": "key",
-      "N_RETRY": 5
+      "N_RETRY": "5"
     }
   }
 }
