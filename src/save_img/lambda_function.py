@@ -163,7 +163,7 @@ def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) ->
         logger.error("[RetryOver]")
         return
     try:
-        control(record, ep, dp)
+        control(body, ep, dp)
     except:
         logger.exception()
         # 例外発生時はeventの内容を投入
