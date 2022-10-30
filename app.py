@@ -54,7 +54,7 @@ class SugokuWaruiTool(Stack):
             code=lambda_.Code.from_asset("src/get_url"),
             handler="lambda_function.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
-            timeout=Duration.seconds(60),
+            timeout=Duration.seconds(30),
             environment=self.node.try_get_context("lambda_env"),
             memory_size=256,
             layers=[layer]
