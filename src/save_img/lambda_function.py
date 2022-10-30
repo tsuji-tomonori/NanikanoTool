@@ -154,7 +154,7 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     if len(response["Items"]) == 1:
         sp = ServiceParam.of(response["Items"][0]["archive_url"]["S"])
         get_and_save_img(ep=ep, dp=dp, sp=sp)
-    if "LastEvaluatedKey" in response:
+    if "LastEvaluatedKey" not in response:
         dp.sqs.send(ep.TOPICK_ARN, response["LastEvaluatedKey"])
 
 
