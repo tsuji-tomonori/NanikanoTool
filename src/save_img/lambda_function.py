@@ -155,7 +155,8 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
         sp = ServiceParam.of(response["Items"][0]["archive_url"]["S"])
         get_and_save_img(ep=ep, dp=dp, sp=sp)
     if "LastEvaluatedKey" in response:
-        dp.sqs.send(ep.QUEUE_URL, response["LastEvaluatedKey"])
+        last_evaluated_key = {"LastEvaluatedKey": response["LastEvaluatedKey"]}
+        dp.sqs.send(ep.QUEUE_URL, last_evaluated_key)
     else:
         dp.sns.publish(ep.TOPICK_ARN, "処理が完了しました", "処理完了通知")
 
