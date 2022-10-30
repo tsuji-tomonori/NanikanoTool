@@ -123,6 +123,9 @@ def archives_urls(index_url: str) -> list[str]:
 def service(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     logger.info("control start")
     idx = body.get("index", 0)
+    if idx > 191:
+        logger.warn(f"idx が191を超えています: {next_idx}")
+        return
     urls = index_urls(dp.ssm.get_paramater(ep.URL_PARAM))
     for archive_url in archives_urls(urls[idx]):
         dp.dynamodb.put(ep.DB_NAME, ep.PKEY, archive_url)
@@ -130,8 +133,6 @@ def service(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     if next_idx == 191:
         dp.sns.publish(ep.TOPICK_ARN, "処理が完了しました", "DB登録通知")
         dp.sqs.send(ep.IMG_QUEUE_URL, {"start": "get_url lambda"})
-    elif next_idx > 191:
-        logger.warn(f"next_idx が191を超えています: {next_idx}")
     else:
         dp.sqs.send(ep.URL_QUEUE_URL, {"index": next_idx})
 
