@@ -124,7 +124,7 @@ def service(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     logger.info("control start")
     idx = body.get("index", 0)
     if idx > 190:
-        logger.warn(f"idx が190を超えています: {next_idx}")
+        logger.warn(f"idx が190を超えています: {idx}")
         return
     urls = index_urls(dp.ssm.get_paramater(ep.URL_PARAM))
     for archive_url in archives_urls(urls[idx]):
