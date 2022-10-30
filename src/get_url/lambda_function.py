@@ -123,8 +123,8 @@ def archives_urls(index_url: str) -> list[str]:
 def service(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     logger.info("control start")
     idx = body.get("index", 0)
-    if idx > 191:
-        logger.warn(f"idx が191を超えています: {next_idx}")
+    if idx > 190:
+        logger.warn(f"idx が190を超えています: {next_idx}")
         return
     urls = index_urls(dp.ssm.get_paramater(ep.URL_PARAM))
     for archive_url in archives_urls(urls[idx]):
