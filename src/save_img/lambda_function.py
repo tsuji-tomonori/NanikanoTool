@@ -46,7 +46,7 @@ class DynamoDb(AwsBase):
     def scan(self, db_name: str, last_evaluated_key: str | None) -> dict:
         logger.info("DynamoDb start")
         client = self.session.client("dynamodb")
-        param = {"TableName": db_name}
+        param = {"TableName": db_name, "Limit": 1}
         if last_evaluated_key:
             param["ExclusiveStartKey"] = last_evaluated_key
         res = client.scan(**param)
