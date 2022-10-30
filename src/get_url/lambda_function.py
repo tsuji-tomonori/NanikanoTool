@@ -127,9 +127,11 @@ def service(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     for archive_url in archives_urls(urls[idx]):
         dp.dynamodb.put(ep.DB_NAME, ep.PKEY, archive_url)
     next_idx = idx + 1
-    if next_idx > 191:
+    if next_idx == 191:
         dp.sns.publish(ep.TOPICK_ARN, "処理が完了しました", "DB登録通知")
         dp.sqs.send(ep.IMG_QUEUE_URL, {"start": "get_url lambda"})
+    elif next_idx > 191:
+        logger.warn(f"next_idx が191を超えています: {next_idx}")
     else:
         dp.sqs.send(ep.URL_QUEUE_URL, {"index": next_idx})
 
