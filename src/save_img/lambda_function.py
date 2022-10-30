@@ -156,8 +156,6 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
         get_and_save_img(ep=ep, dp=dp, sp=sp)
     if "LastEvaluatedKey" in response:
         dp.sqs.send(ep.TOPICK_ARN, response["LastEvaluatedKey"])
-    else:
-        dp.sns.publish(ep.TOPICK_ARN, "処理完了しました", "処理完了通知")
 
 
 def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
