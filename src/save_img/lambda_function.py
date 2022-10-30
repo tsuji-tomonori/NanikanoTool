@@ -16,7 +16,7 @@ logger = logging.getLogger()
 
 class EnvironParams(NamedTuple):
     LOG_LEVEL: str
-    QUEUE_URL: str
+    IMG_QUEUE_URL: str
     BUCKET_NAME: str
     DB_NAME: str
     TOPICK_ARN: str
@@ -156,7 +156,7 @@ def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
         get_and_save_img(ep=ep, dp=dp, sp=sp)
     if "LastEvaluatedKey" in response:
         last_evaluated_key = {"LastEvaluatedKey": response["LastEvaluatedKey"]}
-        dp.sqs.send(ep.QUEUE_URL, last_evaluated_key)
+        dp.sqs.send(ep.IMG_QUEUE_URL, last_evaluated_key)
     else:
         dp.sns.publish(ep.TOPICK_ARN, "処理が完了しました", "処理完了通知")
 
