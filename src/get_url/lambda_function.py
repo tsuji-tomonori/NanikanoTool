@@ -16,8 +16,10 @@ logger = logging.getLogger()
 
 class EnvironParams(NamedTuple):
     LOG_LEVEL: str
+    URL_QUEUE_URL: str
     IMG_QUEUE_URL: str
-    BUCKET_NAME: str
+    PKEY: str
+    URL_PARAM: str
     DB_NAME: str
     TOPICK_ARN: str
     N_RETRY: str
@@ -32,28 +34,23 @@ class AwsBase:
         self.session = boto3.Session(profile_name=profile)
 
 
-class S3(AwsBase):
-    def upload(self, data: bytes, bucket_name: str, key: str) -> None:
-        client = self.session.client("s3")
-        client.put_object(
-            Body=data,
-            Bucket=bucket_name,
-            Key=key,
+class Ssm(AwsBase):
+    def get_paramater(self, key: str) -> str:
+        client = self.session.client("ssm")
+        value = client.get_parameter(
+            Name=key,
+            WithDecryption=True
         )
+        return value["Parameter"]["Value"]
 
 
 class DynamoDb(AwsBase):
-    def scan(self, db_name: str, last_evaluated_key: str | None) -> dict:
-        logger.info("DynamoDb start")
-        client = self.session.client("dynamodb")
-        param = {"TableName": db_name, "Limit": 1}
-        if last_evaluated_key:
-            param["ExclusiveStartKey"] = last_evaluated_key
-        res = client.scan(**param)
-        logger.info(f"dynamodb={json.dumps(res)}")
-        if len(res["Items"]) > 1:
-            raise Exception("想定以上にレコードを取得しています")
-        return res
+    def put(self, db_name: str, pkey: str, url: str) -> dict:
+        dynamodb = self.session.resource("dynamodb")
+        table = dynamodb.Table(db_name)
+        table.put_item(
+            Item={pkey: url}
+        )
 
 
 class Sns(AwsBase):
@@ -77,7 +74,7 @@ class Sqs(AwsBase):
 
 
 class Dependencies(NamedTuple):
-    s3: S3
+    ssm: Ssm
     dynamodb: DynamoDb
     sns: Sns
     sqs: Sqs
@@ -85,7 +82,7 @@ class Dependencies(NamedTuple):
     @classmethod
     def on_lambda(cls) -> Dependencies:
         return Dependencies(
-            s3=S3(),
+            ssm=Ssm(),
             dynamodb=DynamoDb(),
             sns=Sns(),
             sqs=Sqs(),
@@ -94,7 +91,7 @@ class Dependencies(NamedTuple):
     @classmethod
     def on_local(cls, profile: str) -> Dependencies:
         return Dependencies(
-            s3=S3(profile),
+            ssm=Ssm(profile),
             dynamodb=DynamoDb(profile),
             sns=Sns(profile),
             sqs=Sqs(profile),
@@ -113,55 +110,31 @@ class ServiceParam(NamedTuple):
         )
 
 
-def save_img(img: bytes, img_index: int, ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> None:
-    dp.s3.upload(
-        data=img,
-        bucket_name=ep.BUCKET_NAME,
-        key=f"{sp.archive_number}_{str(img_index).zfill(3)}.png",
-    )
+def index_urls(base_url: str) -> list[str]:
+    return [base_url] + [f"{base_url}page/{i}" for i in range(2, 191+1)]
 
 
-def get_img(img_url: str) -> bytes:
-    return requests.get(img_url).content
-
-
-def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> None:
-    logger.info("get_and_save_img start")
-    response = requests.get(sp.archive_url)
+def archives_urls(index_url: str) -> list[str]:
+    response = requests.get(index_url)
     soup = BeautifulSoup(response.text, 'lxml')
-    index = 0
-    for obj in soup.find_all(class_="external"):
-        img_url = obj.get("href")
-        if "jpg" in img_url:
-            save_img(
-                img=get_img(img_url),
-                img_index=index,
-                ep=ep,
-                dp=dp,
-                sp=sp,
-            )
-            index += 1
-            logger.info(f"[save][{index}][{img_url}]")
-        else:
-            logger.info(f"[skip][{index}][{img_url}]")
+    return [l.get("href") for l in soup.find_all(class_="post-link")]
 
 
-def control(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
+def service(body: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     logger.info("control start")
-    response = dp.dynamodb.scan(
-        ep.DB_NAME, body.get("LastEvaluatedKey")
-    )
-    if len(response["Items"]) == 1:
-        sp = ServiceParam.of(response["Items"][0]["archive_url"]["S"])
-        get_and_save_img(ep=ep, dp=dp, sp=sp)
-    if "LastEvaluatedKey" in response:
-        last_evaluated_key = {"LastEvaluatedKey": response["LastEvaluatedKey"]}
-        dp.sqs.send(ep.IMG_QUEUE_URL, last_evaluated_key)
+    idx = body.get("index", 0)
+    urls = index_urls(dp.ssm.get_paramater(ep.URL_PARAM))
+    for archive_url in archives_urls(urls[idx]):
+        dp.dynamodb.put(ep.DB_NAME, ep.PKEY, archive_url)
+    next_idx = idx + 1
+    if next_idx > 191:
+        dp.sns.publish(ep.TOPICK_ARN, "処理が完了しました", "DB登録通知")
+        dp.sqs.send(ep.IMG_QUEUE_URL, {"start": "get_url lambda"})
     else:
-        dp.sns.publish(ep.TOPICK_ARN, "処理が完了しました", "処理完了通知")
+        dp.sqs.send(ep.URL_QUEUE_URL, {"index": next_idx})
 
 
-def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
+def control(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) -> None:
     logger.info("control_loop start")
     # SQSの中身をパース
     body = json.loads(record["body"])
@@ -170,7 +143,7 @@ def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) ->
         logger.error("[RetryOver]")
         return
     try:
-        control(body, ep, dp)
+        service(body, ep, dp)
     except:
         logger.exception()
         # 例外発生時はeventの内容を投入
@@ -185,7 +158,7 @@ def lambda_handler(event, context) -> int:
     logger.info(json.dumps(event, indent=2))
     dp = Dependencies.on_lambda()
     for ix, record in enumerate(event["Records"]):
-        control_loop(record, ep, dp)
+        control(record, ep, dp)
         if ix != len(event["Records"]) - 1:
             logger.info("[wait][5s]")
             time.sleep(5)
