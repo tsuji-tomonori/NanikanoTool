@@ -182,6 +182,6 @@ def lambda_handler(event, context) -> int:
     dp = Dependencies.on_lambda()
     for ix, record in enumerate(event["Records"]):
         control_loop(record, ep, dp)
-        if ix != len(event["Records"]):
+        if ix != len(event["Records"]) - 1:
             logger.info("[wait][5s]")
             time.sleep(5)
