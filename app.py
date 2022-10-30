@@ -97,6 +97,7 @@ class SugokuWaruiTool(Stack):
 
         fin_topic = sns.Topic(self, "fin_topic")
         fin_topic.grant_publish(saveimg_fn.role)
+        fin_topic.grant_publish(get_url_fn.role)
         saveimg_fn.add_environment("TOPICK_ARN", fin_topic.topic_arn)
         get_url_fn.add_environment("TOPICK_ARN", fin_topic.topic_arn)
 
