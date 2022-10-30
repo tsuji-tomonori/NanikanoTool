@@ -19,6 +19,7 @@
   },
   "context": {
     "PROJECT_NAME": "NanikanoTool",
+    "URL_PARAM": "nanikanotool_url_name",
     "lambda_env": {
       "LOG_LEVEL": "INFO",
       "PKEY": "archive_url",
