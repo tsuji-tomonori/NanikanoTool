@@ -72,7 +72,7 @@ class Sqs(AwsBase):
         client.send_message(
             QueueUrl=queue_url,
             MessageBody=json.dumps(message),
-            DelaySeconds=10,
+            DelaySeconds=60,
         )
 
 
@@ -132,6 +132,7 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
     index = 0
     for obj in soup.find_all(class_="external"):
         img_url = obj.get("href")
+        logger.info(f"[crnt][{index}][{img_url}]")
         if "jpg" in img_url:
             save_img(
                 img=get_img(img_url),
