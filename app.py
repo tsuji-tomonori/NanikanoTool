@@ -70,7 +70,7 @@ class SugokuWaruiTool(Stack):
         get_url_fn.add_environment("IMG_QUEUE_URL", saveimg_trigger.queue_url)
 
         get_url_trigger = sqs.Queue(
-            self, "get_url_trigger", visibility_timeout=Duration(300))
+            self, "get_url_trigger", visibility_timeout=Duration.seconds(300))
         get_url_fn.add_event_source(
             lambda_event.SqsEventSource(get_url_trigger)
         )
