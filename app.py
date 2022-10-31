@@ -54,7 +54,7 @@ class SugokuWaruiTool(Stack):
             code=lambda_.Code.from_asset("src/get_url"),
             handler="lambda_function.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
-            timeout=Duration.seconds(30),
+            timeout=Duration.seconds(300),
             environment=self.node.try_get_context("lambda_env"),
             memory_size=256,
             layers=[layer]
@@ -69,7 +69,8 @@ class SugokuWaruiTool(Stack):
         saveimg_fn.add_environment("IMG_QUEUE_URL", saveimg_trigger.queue_url)
         get_url_fn.add_environment("IMG_QUEUE_URL", saveimg_trigger.queue_url)
 
-        get_url_trigger = sqs.Queue(self, "get_url_trigger")
+        get_url_trigger = sqs.Queue(
+            self, "get_url_trigger", visibility_timeout=Duration(300))
         get_url_fn.add_event_source(
             lambda_event.SqsEventSource(get_url_trigger)
         )
