@@ -169,14 +169,14 @@ def control_loop(record: dict[str, Any], ep: EnvironParams, dp: Dependencies) ->
     if body.get("retry", 0) > int(ep.N_RETRY):
         logger.error("[RetryOver]")
         return
-    try:
-        control(body, ep, dp)
-    except:
-        logger.exception()
-        # 例外発生時はeventの内容を投入
-        body["retry"] = body.get("retry", 0) + 1
-        dp.sqs.send(ep.TOPICK_ARN, body)
-        logger.warning("Retry Start")
+    # try:
+    control(body, ep, dp)
+    # except:
+    #     logger.exception()
+    #     # 例外発生時はeventの内容を投入
+    #     body["retry"] = body.get("retry", 0) + 1
+    #     dp.sqs.send(ep.TOPICK_ARN, body)
+    #     logger.warning("Retry Start")
 
 
 def lambda_handler(event, context) -> int:
