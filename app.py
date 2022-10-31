@@ -43,7 +43,7 @@ class SugokuWaruiTool(Stack):
             code=lambda_.Code.from_asset("src/save_img"),
             handler="lambda_function.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
-            timeout=Duration.seconds(30),
+            timeout=Duration.seconds(300),
             environment=self.node.try_get_context("lambda_env"),
             memory_size=256,
             layers=[layer]
@@ -60,7 +60,8 @@ class SugokuWaruiTool(Stack):
             layers=[layer]
         )
 
-        saveimg_trigger = sqs.Queue(self, "saveimg_trigger")
+        saveimg_trigger = sqs.Queue(
+            self, "saveimg_trigger", visibility_timeout=Duration.seconds(300))
         saveimg_fn.add_event_source(
             lambda_event.SqsEventSource(saveimg_trigger)
         )
