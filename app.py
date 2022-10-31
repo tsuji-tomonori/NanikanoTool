@@ -12,6 +12,7 @@ from aws_cdk import (
     aws_sns as sns,
     aws_ssm as ssm,
     aws_lambda_event_sources as lambda_event,
+    aws_cloudwatch_actions as cwaction,
     Duration,
     Tags,
 )
@@ -110,6 +111,10 @@ class SugokuWaruiTool(Stack):
         )
         param.grant_read(get_url_fn.role)
         get_url_fn.add_environment("URL_PARAM", param.parameter_name)
+
+        metric = saveimg_fn.metric_all_errors()
+        saveimg_alm = metric.create_alarm(self, "saveimg_fn_alm")
+        saveimg_alm.add_alarm_action(cwaction.SnsAction(fin_topic))
 
 
 app = cdk.App()
