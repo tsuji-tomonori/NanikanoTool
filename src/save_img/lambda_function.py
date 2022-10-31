@@ -72,7 +72,7 @@ class Sqs(AwsBase):
         client.send_message(
             QueueUrl=queue_url,
             MessageBody=json.dumps(message),
-            DelaySeconds=10,
+            DelaySeconds=60,
         )
 
 
