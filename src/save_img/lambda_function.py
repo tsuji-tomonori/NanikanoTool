@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import json
-from ssl import SSLError
 import time
 import logging
 from typing import Any, NamedTuple
@@ -142,7 +141,7 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
                     dp=dp,
                     sp=sp,
                 )
-            except SSLError:
+            except:
                 logger.exception()
                 logger.info(f"[skip][{index}][{img_url}]")
             index += 1
