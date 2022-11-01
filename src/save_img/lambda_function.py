@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+from ssl import SSLError
 import time
 import logging
 from typing import Any, NamedTuple
@@ -131,20 +132,19 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
     soup = BeautifulSoup(response.text, 'lxml')
     index = 0
     for obj in soup.find_all(class_="external"):
-        try:
-            img_url = obj.get("href")
-        except:
-            logger.exception()
-            logger.info(f"[skip][{index}][{img_url}]")
-            continue
+        img_url = obj.get("href")
         if ("jpg" in img_url) and ("naver" not in img_url):
-            save_img(
-                img=get_img(img_url),
-                img_index=index,
-                ep=ep,
-                dp=dp,
-                sp=sp,
-            )
+            try:
+                save_img(
+                    img=get_img(img_url),
+                    img_index=index,
+                    ep=ep,
+                    dp=dp,
+                    sp=sp,
+                )
+            except SSLError:
+                logger.exception()
+                logger.info(f"[skip][{index}][{img_url}]")
             index += 1
             logger.info(f"[save][{index}][{img_url}]")
         else:
