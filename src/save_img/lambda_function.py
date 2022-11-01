@@ -152,6 +152,7 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
             except GetImageError:
                 logger.warn(traceback.format_exc())
                 logger.info(f"[skip][{index}][{img_url}]")
+                continue
             index += 1
             logger.info(f"[save][{index}][{img_url}]")
         else:
