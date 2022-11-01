@@ -5,6 +5,7 @@ import json
 import time
 import logging
 from typing import Any, NamedTuple
+import traceback
 
 import requests
 import boto3
@@ -148,8 +149,9 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
                     dp=dp,
                     sp=sp,
                 )
-            except GetImageError as e:
-                logger.info(f"[skip][{index}][{img_url}][{e}]")
+            except GetImageError:
+                logger.warn(traceback.format_exc())
+                logger.info(f"[skip][{index}][{img_url}]")
             index += 1
             logger.info(f"[save][{index}][{img_url}]")
         else:
