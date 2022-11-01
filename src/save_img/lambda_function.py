@@ -140,7 +140,7 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
     index = 0
     for obj in soup.find_all(class_="external"):
         img_url = obj.get("href")
-        if ("jpg" in img_url) and ("naver" not in img_url):
+        if (("jpg" in img_url) or ("png" in img_url)) and ("naver" not in img_url):
             try:
                 save_img(
                     img=get_img(img_url),
@@ -152,6 +152,7 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
             except GetImageError:
                 logger.warn(traceback.format_exc())
                 logger.info(f"[skip][{index}][{img_url}]")
+                continue
             index += 1
             logger.info(f"[save][{index}][{img_url}]")
         else:
