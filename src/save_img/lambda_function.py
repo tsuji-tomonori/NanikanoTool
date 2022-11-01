@@ -121,8 +121,15 @@ def save_img(img: bytes, img_index: int, ep: EnvironParams, dp: Dependencies, sp
     )
 
 
+class GetImageError(Exception):
+    ...
+
+
 def get_img(img_url: str) -> bytes:
-    return requests.get(img_url).content
+    try:
+        return requests.get(img_url).content
+    except Exception as e:
+        raise GetImageError("画像の取得に失敗しました") from e
 
 
 def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> None:
@@ -141,9 +148,8 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
                     dp=dp,
                     sp=sp,
                 )
-            except:
-                logger.exception()
-                logger.info(f"[skip][{index}][{img_url}]")
+            except GetImageError as e:
+                logger.info(f"[skip][{index}][{img_url}][{e}]")
             index += 1
             logger.info(f"[save][{index}][{img_url}]")
         else:
