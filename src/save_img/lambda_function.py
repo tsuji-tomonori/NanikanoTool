@@ -131,7 +131,12 @@ def get_and_save_img(ep: EnvironParams, dp: Dependencies, sp: ServiceParam) -> N
     soup = BeautifulSoup(response.text, 'lxml')
     index = 0
     for obj in soup.find_all(class_="external"):
-        img_url = obj.get("href")
+        try:
+            img_url = obj.get("href")
+        except:
+            logger.exception()
+            logger.info(f"[skip][{index}][{img_url}]")
+            continue
         if ("jpg" in img_url) and ("naver" not in img_url):
             save_img(
                 img=get_img(img_url),
